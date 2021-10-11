@@ -1,6 +1,6 @@
-import { context, Context, logging, RNG, u128 } from "near-sdk-core";
+import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { FEE, GameID, Profile } from "../utils";
-import { Game, GameStatus, Player } from "./model";
+import { Game, GameStatus, Player, ClaimedWin } from "./model";
 import { games, players, profiles } from "./storage";
 
 export function createNewGame(): GameID {
@@ -115,23 +115,34 @@ export function getWinners(gameId: GameID): Array<string> {
 
 export function claimWinnings(gameId: GameID) {
   const sender = Context.sender;
-  let stake: u128;
-
-  for (let index = 0; index < games.length; index++) {
-    if (games[index].id == gameId) {
-      const game: Game = games[index];
-      game.addNewPlayer();
-      assert(addGameToProfile(gameId), "Game id already added to profile");
-      addToPlayersList(game.id);
-
-      games.replace(index, game);
-    }
-  }
+  let pool: u128 = u128.Zero;
 
   verifyGameId(gameId);
   const winners = getWinners(gameId);
+  const gamePlayers = players.get(gameId) as Player[];
+
+  for (let index = 0; index < games.length; index++) {
+    if (games[index].id == gameId) {
+      pool = games[index].pool;
+    }
+  }
 
   assert(winners.includes(sender), "You did not win for this game :(");
+
+  for (let index = 0; index < gamePlayers.length; index++) {
+    if (gamePlayers[index].playerId === sender) {
+      const player = gamePlayers[index];
+      assert(player.claimedWin !== ClaimedWin.Claimed, "You have already claimed prize!");
+      const prize = u128.div(pool, u128.from(winners.length));
+
+      const transfer_win = ContractPromiseBatch.create(sender);
+      transfer_win.transfer(prize);
+      player.claimedWin = ClaimedWin.Claimed;
+      gamePlayers[index] = player;
+
+      players.set(gameId, gamePlayers);
+    }
+  }
 }
 
 /**

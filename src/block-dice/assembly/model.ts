@@ -8,10 +8,9 @@ export enum GameStatus {
   Completed,
 }
 
-export enum WinStatus {
+export enum ClaimedWin {
   No = 0,
-  Won,
-  Claimes,
+  Claimed,
 }
 
 @nearBindgen
@@ -69,11 +68,11 @@ export class Player {
   roll2: u32;
   timeJoined: Timestamp;
   timeRolled: Timestamp;
-  winStatus: WinStatus;
+  claimedWin: ClaimedWin;
   constructor(public gameId: GameID) {
     this.timeJoined = context.blockTimestamp;
     this.playerId = context.sender;
-    this.winStatus = WinStatus.No;
+    this.claimedWin = ClaimedWin.No;
   }
 
   sumDiceRoll(): u32 {
