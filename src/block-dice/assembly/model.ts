@@ -59,6 +59,13 @@ export class Game {
 
     return id;
   }
+
+  canJoinGame(): bool {
+    if (this.status !== GameStatus.Completed && this.ended >= context.blockTimestamp) {
+      return true;
+    }
+    return false;
+  }
 }
 
 @nearBindgen
@@ -78,4 +85,16 @@ export class Player {
   sumDiceRoll(): u32 {
     return this.roll1 + this.roll2;
   }
+}
+
+@nearBindgen
+export class GameReturnData {
+  constructor(
+    public data: Game[],
+    public total: u32,
+    public length: u32,
+    public maxPage: u32,
+    public currentPage: u32,
+    public nextPage: u32
+  ) {}
 }

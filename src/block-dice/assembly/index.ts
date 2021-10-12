@@ -1,6 +1,6 @@
 import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { FEE, GameID, Profile } from "../utils";
-import { Game, GameStatus, Player, ClaimedWin } from "./model";
+import { Game, GameStatus, Player, ClaimedWin, GameReturnData } from "./model";
 import { games, players, profiles } from "./storage";
 
 export function createNewGame(): GameID {
@@ -28,6 +28,8 @@ export function joinGame(gameId: GameID): string {
   for (let index = 0; index < games.length; index++) {
     if (games[index].id == gameId) {
       const game: Game = games[index];
+      assert(game.canJoinGame(), "Cannot join, this game have already ended!");
+
       game.addNewPlayer();
       assert(addGameToProfile(gameId), "Game id already added to profile");
       addToPlayersList(game.id);
@@ -147,6 +149,53 @@ export function claimWinnings(gameId: GameID) {
 
 /**
  *
+ * GETTER Functions
+ */
+
+export function getGameDetails(gameId: GameID): Game[] {
+  verifyGameId(gameId);
+  let result: Game[] = [];
+  //   const gamePlayers = players.get(gameId) as Player[];
+
+  for (let index = 0; index < games.length; index++) {
+    if (games[index].id == gameId) {
+      result.push(games[index]);
+    }
+  }
+
+  return result;
+}
+
+export function getPlayersDetails(gameId: GameID): Player[] {
+  verifyGameId(gameId);
+
+  const getGamePlayers = players.get(gameId) as Player[];
+
+  return getGamePlayers;
+}
+
+/**
+ *
+ * @param page
+ * @returns GameReturnData
+ * For additional information check
+ * @function getGameType
+ */
+
+export function getActiveGames(page: u32): GameReturnData {
+  return getGameType(page, GameStatus.Active);
+}
+
+export function getCompletedGames(page: u32): GameReturnData {
+  return getGameType(page, GameStatus.Completed);
+}
+
+export function getCreatedGames(page: u32): GameReturnData {
+  return getGameType(page, GameStatus.Created);
+}
+
+/**
+ *
  * HELPER FUNCTIONS FOR MAIN DAPP
  */
 
@@ -156,8 +205,8 @@ function verifyGameFee(deposit: u128): void {
 }
 
 /**
- * updates the game id with
  * @param gameId
+ * updates the game id with
  */
 
 function addGameToProfile(gameId: GameID): bool {
@@ -178,16 +227,15 @@ function addGameToProfile(gameId: GameID): bool {
 }
 
 /**
- * Adds a new player to a game
  * @param gameId
+ * Adds a new player to a game
  */
 
 function addToPlayersList(gameId: GameID): void {
-  const sender = context.sender;
   const player = new Player(gameId);
   let newPlayers: Player[] = [];
   if (players.contains(gameId)) {
-    newPlayers = players.get(sender) as Player[];
+    newPlayers = players.get(gameId) as Player[];
   }
 
   newPlayers.push(player);
@@ -205,4 +253,34 @@ function addToPlayersList(gameId: GameID): void {
 
 function verifyGameId(gameId: GameID) {
   assert(players.contains(gameId), "This game ID does not exist");
+}
+
+export function getGameType(_page: u32, type: GameStatus): GameReturnData {
+  const gameType: Game[] = [];
+  const data: Game[] = [];
+
+  for (let index = 0; index < games.length; index++) {
+    if (games[index].status == type) {
+      gameType.push(games[index]);
+    }
+  }
+
+  //   Pagination for active games
+  const page = _page;
+  const startIndex = 8 * page;
+  const total = gameType.length;
+  const maxPage: u32 = NativeMath.ceil(total / page + 1);
+  const nextPage = page + 1;
+
+  assert(startIndex < gameType.length, "Data request out of bounds!");
+
+  const endIndex = min(gameType.length, startIndex + 8);
+
+  for (let index = startIndex; index < endIndex; index++) {
+    data.push(gameType[index]);
+  }
+
+  const result = new GameReturnData(data, total, data.length, maxPage, page + 1, nextPage);
+
+  return result;
 }
