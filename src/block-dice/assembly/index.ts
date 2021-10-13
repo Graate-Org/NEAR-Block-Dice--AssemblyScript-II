@@ -359,7 +359,7 @@ export function getGameType(_page: u32, type: GameStatus): GameReturnData {
   const page = _page;
   const startIndex = 8 * page;
   const total = gameType.length;
-  const maxPage: u32 = NativeMath.ceil(total / page + 1);
+  const maxPage: u32 = <u32>NativeMath.ceil(total / page + 1);
   const nextPage = page + 1;
 
   assert(startIndex < gameType.length, "Data request out of bounds!");
