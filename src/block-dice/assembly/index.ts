@@ -90,10 +90,20 @@ export function rollDice(gameId: GameID): Array<u32> {
 
 export function getWinners(gameId: GameID): Array<string> {
   verifyGameId(gameId);
-
+  for (let index = 0; index < games.length; index++) {
+    if (games[index].id == gameId) {
+      if (games[index].status !== GameStatus.Completed) {
+        if (games[index].status !== GameStatus.Active) {
+          assert(games[index].ended >= context.blockTimestamp, "Game is active but not ended yet!");
+        } else {
+            assert(false, "Game is started but not completed")
+        }
+      }
+    }
+  }
   const gamePlayers = players.get(gameId) as Player[];
   const winners: string[] = [];
-  let maxScore = 0;
+  let maxScore: u32 = 0;
 
   for (let index = 0; index < gamePlayers.length; index++) {
     const diceCount = gamePlayers[index].sumDiceRoll();
@@ -113,7 +123,7 @@ export function getWinners(gameId: GameID): Array<string> {
   return winners;
 }
 
-export function claimWinnings(gameId: GameID): void {
+export function claimWinnings(gameId: GameID): bool {
   const sender = Context.sender;
   let pool: u128 = u128.Zero;
 
@@ -143,6 +153,8 @@ export function claimWinnings(gameId: GameID): void {
       players.set(gameId, gamePlayers);
     }
   }
+
+  return true;
 }
 
 /**

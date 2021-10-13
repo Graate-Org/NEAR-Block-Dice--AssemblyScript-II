@@ -20,8 +20,8 @@ export function addContactDetails(_phone: string, _name: string): void {
 
 
 ```ts
-export function deleteContact(contactIndex: i32): void {```
-
+export function deleteContact(contactIndex: i32): void {
+```
 - "Change" function (ie. a function that alters contract state)
 - Takes two parameters, a phone number as a string and a name for the phone number
-
+}
