@@ -3,6 +3,12 @@ import { AccountID, FEE, GameID, Profile } from "../utils";
 import { Game, GameStatus, Player, ClaimedWin, GameReturnData } from "./model";
 import { games, players, profiles } from "./storage";
 
+/**
+ *
+ * @returns @GameID
+ * creates a new game and return the game id
+ * Needs minimun attached deposit to be 0.2 NEAR as fee
+ */
 export function createNewGame(): GameID {
   const sender = context.sender;
   verifyGameFee(Context.attachedDeposit);
@@ -22,6 +28,13 @@ export function createNewGame(): GameID {
 
   return gameId;
 }
+
+/**
+ *
+ * @param gameId
+ * @returns success message
+ * Allows other users to join a  game using the gameId
+ */
 
 export function joinGame(gameId: GameID): string {
   const sender = context.sender;
@@ -43,6 +56,11 @@ export function joinGame(gameId: GameID): string {
   return "You have joined game: " + gameId;
 }
 
+/**
+ *
+ * @param gameId
+ * @returns an arraay of the value of dice rolled
+ */
 export function rollDice(gameId: GameID): Array<u32> {
   let roll1: u32;
   let roll2: u32;
@@ -88,6 +106,12 @@ export function rollDice(gameId: GameID): Array<u32> {
   return [roll1, roll2];
 }
 
+/**
+ *
+ * @param gameId
+ * @returns an array of winners
+ * @throws if game has not ended
+ */
 export function getWinners(gameId: GameID): Array<string> {
   verifyGameId(gameId);
   for (let index = 0; index < games.length; index++) {
@@ -96,7 +120,7 @@ export function getWinners(gameId: GameID): Array<string> {
         if (games[index].status !== GameStatus.Active) {
           assert(games[index].ended >= context.blockTimestamp, "Game is active but not ended yet!");
         } else {
-            assert(false, "Game is started but not completed")
+          assert(false, "Game is started but not completed");
         }
       }
     }
@@ -107,9 +131,7 @@ export function getWinners(gameId: GameID): Array<string> {
 
   for (let index = 0; index < gamePlayers.length; index++) {
     const diceCount = gamePlayers[index].sumDiceRoll();
-    if (diceCount > maxScore) {
-      maxScore = diceCount;
-    }
+    maxScore = max(diceCount, maxScore);
   }
 
   for (let index = 0; index < gamePlayers.length; index++) {
@@ -122,6 +144,15 @@ export function getWinners(gameId: GameID): Array<string> {
 
   return winners;
 }
+
+/**
+ *
+ * @param gameId
+ * @returns true if win is  claimed
+ * @throws if you are not a winner
+ * calls @function getWinners to access winners array
+ * calculates the amount each winner gets from the pool
+ */
 
 export function claimWinnings(gameId: GameID): bool {
   const sender = Context.sender;
@@ -162,6 +193,12 @@ export function claimWinnings(gameId: GameID): bool {
  * GETTER Functions
  */
 
+/**
+ *
+ * @param gameId
+ * @returns an array of all games
+ */
+
 export function getGameDetails(gameId: GameID): Game[] {
   verifyGameId(gameId);
   let result: Game[] = [];
@@ -176,6 +213,12 @@ export function getGameDetails(gameId: GameID): Game[] {
   return result;
 }
 
+/**
+ *
+ * @param gameId
+ * @returns an array of players
+ */
+
 export function getPlayersDetails(gameId: GameID): Player[] {
   verifyGameId(gameId);
 
@@ -184,6 +227,10 @@ export function getPlayersDetails(gameId: GameID): Player[] {
   return getGamePlayers;
 }
 
+/**
+ *
+ * @returns Profile/user profile with array of games
+ */
 export function getProfileDetails(): Profile {
   const sender = context.sender;
 
@@ -218,7 +265,10 @@ export function getCreatedGames(page: u32): GameReturnData {
  * HELPER FUNCTIONS FOR MAIN DAPP
  */
 
-//Verify that deposit attached is equal to or greater than the fee
+/**
+ * @param deposit
+ * Verify that deposit attached is equal to or greater than the fee
+ */
 function verifyGameFee(deposit: u128): void {
   assert(deposit >= FEE, "You need to have at least 0.5 NEAR tokens to continue");
 }
@@ -254,6 +304,12 @@ function addGameToProfile(gameId: GameID, sender: AccountID): void {
  * Adds a new player to a game
  */
 
+/**
+ *
+ * @param gameId
+ * @param playerId
+ * adds the playerid passed to the list of players for a game
+ */
 function addToPlayersList(gameId: GameID, playerId: AccountID): void {
   const player = new Player(gameId, playerId);
   let newPlayers: Player[] = [];
@@ -278,6 +334,17 @@ function verifyGameId(gameId: GameID): void {
   assert(players.contains(gameId), "This game ID does not exist");
 }
 
+/**
+ *
+ * @param _page
+ * @param type
+ * @returns GameReturnData
+ * helper function for returning games based on status
+ * used by:
+ *@function getActiveGames
+ *@function getCompletedGames
+ *@function getCreatedGames
+ */
 export function getGameType(_page: u32, type: GameStatus): GameReturnData {
   const gameType: Game[] = [];
   const data: Game[] = [];
@@ -288,7 +355,7 @@ export function getGameType(_page: u32, type: GameStatus): GameReturnData {
     }
   }
 
-  //   Pagination for active games
+  //   Pagination for game DATA
   const page = _page;
   const startIndex = 8 * page;
   const total = gameType.length;
