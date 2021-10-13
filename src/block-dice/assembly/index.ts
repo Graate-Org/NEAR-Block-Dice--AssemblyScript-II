@@ -1,9 +1,10 @@
 import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
-import { FEE, GameID, Profile } from "../utils";
+import { AccountID, FEE, GameID, Profile } from "../utils";
 import { Game, GameStatus, Player, ClaimedWin, GameReturnData } from "./model";
 import { games, players, profiles } from "./storage";
 
 export function createNewGame(): GameID {
+  const sender = context.sender;
   verifyGameFee(Context.attachedDeposit);
   const game = new Game();
   const gameId = game.id;
@@ -16,13 +17,14 @@ export function createNewGame(): GameID {
   //   sets storage data for new game
   games.push(game);
 
-  assert(addGameToProfile(gameId), "Game id already added to profile");
-  addToPlayersList(gameId);
+  addGameToProfile(gameId, sender);
+  addToPlayersList(gameId, sender);
 
   return gameId;
 }
 
 export function joinGame(gameId: GameID): string {
+  const sender = context.sender;
   verifyGameId(gameId);
   verifyGameFee(Context.attachedDeposit);
   for (let index = 0; index < games.length; index++) {
@@ -31,8 +33,8 @@ export function joinGame(gameId: GameID): string {
       assert(game.canJoinGame(), "Cannot join, this game have already ended!");
 
       game.addNewPlayer();
-      assert(addGameToProfile(gameId), "Game id already added to profile");
-      addToPlayersList(game.id);
+      addGameToProfile(gameId, sender);
+      addToPlayersList(gameId, sender);
 
       games.replace(index, game);
     }
@@ -50,18 +52,14 @@ export function rollDice(gameId: GameID): Array<u32> {
   for (let index = 0; index < games.length; index++) {
     if (games[index].id == gameId) {
       const game: Game = games[index];
+      assert(game.canRollInGame(), "This game has ended!");
+
       if ((game.status = GameStatus.Created)) {
         game.status = GameStatus.Active;
         game.started = Context.blockTimestamp;
         game.ended = Context.blockTimestamp + 1800000;
-      } else {
-        const gameIsStillOn = game.ended > Context.blockTimestamp;
-
-        if (!gameIsStillOn) {
-          game.status = GameStatus.Completed;
-        }
-        assert(gameIsStillOn, "This game has ended!");
       }
+
       games.replace(index, game);
     }
   }
@@ -115,7 +113,7 @@ export function getWinners(gameId: GameID): Array<string> {
   return winners;
 }
 
-export function claimWinnings(gameId: GameID) {
+export function claimWinnings(gameId: GameID): void {
   const sender = Context.sender;
   let pool: u128 = u128.Zero;
 
@@ -132,9 +130,9 @@ export function claimWinnings(gameId: GameID) {
   assert(winners.includes(sender), "You did not win for this game :(");
 
   for (let index = 0; index < gamePlayers.length; index++) {
-    if (gamePlayers[index].playerId === sender) {
+    if (gamePlayers[index].playerId == sender) {
       const player = gamePlayers[index];
-      assert(player.claimedWin !== ClaimedWin.Claimed, "You have already claimed prize!");
+      assert(player.claimedWin != ClaimedWin.Claimed, "You have already claimed prize!");
       const prize = u128.div(pool, u128.from(winners.length));
 
       const transfer_win = ContractPromiseBatch.create(sender);
@@ -174,6 +172,15 @@ export function getPlayersDetails(gameId: GameID): Player[] {
   return getGamePlayers;
 }
 
+export function getProfileDetails(): Profile {
+  const sender = context.sender;
+
+  if (profiles.contains(sender)) {
+    return profiles.get(sender) as Profile;
+  }
+  return [];
+}
+
 /**
  *
  * @param page
@@ -209,21 +216,25 @@ function verifyGameFee(deposit: u128): void {
  * updates the game id with
  */
 
-function addGameToProfile(gameId: GameID): bool {
-  const sender = context.sender;
+function addGameToProfile(gameId: GameID, sender: AccountID): void {
   let profile: Profile = [];
   if (profiles.contains(sender)) {
     profile = profiles.get(sender) as Profile;
-
-    // Prevents adding the same game ID more than once
-    return !profile.includes(gameId);
   }
+
+  // Prevents adding the same game ID more than once
+  //   if (profile.includes(gameId)) {
+
+  //   }
+
+  for (let index = 0; index < profile.length; index++) {
+    assert(profile[index] == gameId, "Game id already added to profile");
+  }
+
   profile.push(gameId);
 
   //   set to storage
   profiles.set(sender, profile);
-
-  return true;
 }
 
 /**
@@ -231,8 +242,8 @@ function addGameToProfile(gameId: GameID): bool {
  * Adds a new player to a game
  */
 
-function addToPlayersList(gameId: GameID): void {
-  const player = new Player(gameId);
+function addToPlayersList(gameId: GameID, playerId: AccountID): void {
+  const player = new Player(gameId, playerId);
   let newPlayers: Player[] = [];
   if (players.contains(gameId)) {
     newPlayers = players.get(gameId) as Player[];
@@ -251,7 +262,7 @@ function addToPlayersList(gameId: GameID): void {
  * panics if game ID does not exist
  */
 
-function verifyGameId(gameId: GameID) {
+function verifyGameId(gameId: GameID): void {
   assert(players.contains(gameId), "This game ID does not exist");
 }
 

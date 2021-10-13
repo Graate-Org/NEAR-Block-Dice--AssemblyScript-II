@@ -35,12 +35,10 @@ export class Game {
 
   //   Static method
   static getGameRules(): string {
-    return `You need to create or join a game with a 0.02 NEAR fee \n
-    A game starts when the first player rolls \n
-    Each game lasts 30 minutes`;
+    return "You need to create or join a game with a 0.02 NEAR fee \n A game starts when the first player rolls \n Each game lasts 30 minutes";
   }
 
-  addNewPlayer() {
+  addNewPlayer(): void {
     this.players += 1;
     this.prize = u128.add(this.prize, FEE);
   }
@@ -61,7 +59,20 @@ export class Game {
   }
 
   canJoinGame(): bool {
-    if (this.status !== GameStatus.Completed && this.ended >= context.blockTimestamp) {
+    if (this.status !== GameStatus.Completed) {
+      if (this.status === GameStatus.Active && this.ended >= context.blockTimestamp) {
+        return true;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  canRollInGame(): bool {
+    if (this.status !== GameStatus.Completed) {
+      if (this.status === GameStatus.Active && this.ended >= context.blockTimestamp) {
+        return true;
+      }
       return true;
     }
     return false;
@@ -70,15 +81,13 @@ export class Game {
 
 @nearBindgen
 export class Player {
-  playerId: AccountID;
   roll1: u32;
   roll2: u32;
   timeJoined: Timestamp;
   timeRolled: Timestamp;
   claimedWin: ClaimedWin;
-  constructor(public gameId: GameID) {
+  constructor(public gameId: GameID, public playerId: AccountID) {
     this.timeJoined = context.blockTimestamp;
-    this.playerId = context.sender;
     this.claimedWin = ClaimedWin.No;
   }
 
