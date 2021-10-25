@@ -1,21 +1,17 @@
-# Sample
+# Block-Dice
 
-This repository includes a complete project structure for AssemblyScript contracts targeting the NEAR platform.
+This repository includes a complete Smart Contract for a dice game built on the NEAR blockchain. This is a second sample that corrects a leak in the initial sample. 
+
+- The error in the initial smart contract is that you can see what other players rolled before a game has ended, this gives those joining late an edge as they can make a decision based on what other players rolled. We are correcting this by only revealing a players roll if a game has ended.
 
 
-```
-There are 2 "styles" of implementing AssemblyScript NEAR contracts: 
-- the contract interface can either be a collection of exported functions 
-- or the contract interface can be the methods of a an exported class
-
-We call the second style "Singleton" because there is only one instance of the class which is serialized to the blockchain storage.  Rust contracts written for NEAR do this by default with the contract struct.
+For additional informtion on the smart contract methods view [here](src/block-dice/)
 
 ```
 
-The example here is very basic.  It's a simple contract demonstrating the following concepts:
-- a single contract
-- the difference between `view` vs. `change` methods
-- basic contract storage
+It's a simple contract demonstrating how to build a dic game on the NEAR blockchain using assembly script:
+- Why you should avoid leaks and have data restrictions on your smart contracts 
+- How to implement random number generation and id checks on the NEAR block chain
 
 
 ## Usage
@@ -24,7 +20,7 @@ The example here is very basic.  It's a simple contract demonstrating the follow
 
 1. clone this repo to a local folder
 2. run `yarn`
-3. run `yarn test`
+3. run `yarn test:unit`
 
 ### Top-level `yarn` commands
 
@@ -38,5 +34,6 @@ The example here is very basic.  It's a simple contract demonstrating the follow
 ### Other documentation
 
 - Sample contract and test documentation
-  - see `/src/sample/README` for contract interface
-  - see `/src/sample/__tests__/README` for Sample unit testing details
+  - see `/src/block-dice/README` for contract interface
+  - see `/src/block-dice/__tests__/README` for Sample unit testing details
+```

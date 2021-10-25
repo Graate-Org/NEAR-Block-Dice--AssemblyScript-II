@@ -58,7 +58,7 @@ export class Game {
     return id;
   }
 
-  canJoinGame(): bool {
+  gameNotCompleted(): bool {
     if (this.status !== GameStatus.Completed) {
       if (this.status === GameStatus.Active && this.ended >= context.blockTimestamp) {
         return true;
@@ -94,6 +94,10 @@ export class Player {
   sumDiceRoll(): u32 {
     return this.roll1 + this.roll2;
   }
+}
+
+export class FormatedPlayer {
+  constructor(public gameId: GameID, public playerId: AccountID,public timeJoined: Timestamp, public timeRolled: Timestamp) {}
 }
 
 @nearBindgen

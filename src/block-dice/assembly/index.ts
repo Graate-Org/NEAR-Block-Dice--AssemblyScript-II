@@ -1,6 +1,6 @@
 import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { AccountID, FEE, GameID, Profile } from "../utils";
-import { Game, GameStatus, Player, ClaimedWin, GameReturnData } from "./model";
+import { Game, GameStatus, Player, ClaimedWin, GameReturnData, FormatedPlayer } from "./model";
 import { games, players, profiles } from "./storage";
 
 /**
@@ -43,7 +43,7 @@ export function joinGame(gameId: GameID): string {
   for (let index = 0; index < games.length; index++) {
     if (games[index].id == gameId) {
       const game: Game = games[index];
-      assert(game.canJoinGame(), "Cannot join, this game have already ended!");
+      assert(game.gameNotCompleted(), "Cannot join, this game have already ended!");
 
       game.addNewPlayer();
       addGameToProfile(gameId, sender);
@@ -219,12 +219,21 @@ export function getGameDetails(gameId: GameID): Game[] {
  * @returns an array of players
  */
 
-export function getPlayersDetails(gameId: GameID): Player[] {
+export function getPlayersDetails(gameId: GameID): Player[] | FormatedPlayer[] {
   verifyGameId(gameId);
 
-  const getGamePlayers = players.get(gameId) as Player[];
+  let result: Player[] | FormatedPlayer[] = [];
+  //   const gamePlayers = players.get(gameId) as Player[];
 
-  return getGamePlayers;
+  for (let index = 0; index < games.length; index++) {
+    if (games[index].id == gameId) {
+      const status = !games[index].gameNotCompleted() ? GameStatus.Completed : games[index].status;
+      const gamePlayers = players.get(gameId) as Player[];
+      result = formatPlayersData(gamePlayers, status);
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -373,4 +382,33 @@ export function getGameType(_page: u32, type: GameStatus): GameReturnData {
   const result = new GameReturnData(data, total, data.length, maxPage, page + 1, nextPage);
 
   return result;
+}
+
+/**
+ *
+ * @param players
+ * @param status
+ * @returns Players data for a specific game based on the status
+ * @if a game is completed, it returns the full information for each player.
+ * @else It returns player information without the rolls from the player
+ */
+
+function formatPlayersData(players: Player[], status: GameStatus): Player[] | FormatedPlayer[] {
+  const formatedPlayers: FormatedPlayer[] = [];
+
+  if (status === GameStatus.Completed) {
+    return players;
+  } else {
+    for (let index = 0; index < players.length; index++) {
+      const player = new FormatedPlayer(
+        players[index].gameId,
+        players[index].playerId,
+        players[index].timeJoined,
+        players[index].timeRolled
+      );
+      formatedPlayers.push(player);
+    }
+  }
+
+  return formatedPlayers;
 }
