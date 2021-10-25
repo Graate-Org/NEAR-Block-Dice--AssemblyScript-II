@@ -88,9 +88,17 @@ describe("Rolling dice", () => {
 
   it("rolls the dice", () => {
     const dices = rollDice(testGameId);
-    const player = getPlayersDetails(testGameId)[0];
-    expect(dices[0]).toStrictEqual(player.roll1, "Expect dice at index '0' to equal players roll1");
-    expect(dices[1]).toStrictEqual(player.roll2, "Expect dice at index '0' to equal players roll2");
+    const player = players.get(testGameId) as Player[];
+    expect(dices[0]).toStrictEqual(player[0].roll1, "Expect dice at index '0' to equal players roll1");
+    expect(dices[1]).toStrictEqual(player[0].roll2, "Expect dice at index '0' to equal players roll2");
+  });
+
+  it("Doesn't return rolls if game has not ended", () => {
+    rollDice(testGameId);
+    const player = getPlayersDetails(testGameId);
+    
+    expect(player[0].roll1).toStrictEqual(0, "Expect dice at index '0' to equal null because game is not completed");
+    expect(player[0].roll2).toStrictEqual(0, "Expect dice at index '0' to equal null because game is not completed");
   });
 
   it("can't roll the dice twice", () => {
@@ -128,7 +136,6 @@ describe("Claiming winning", () => {
     endedGame.ended = context.blockTimestamp;
     games.replace(0, endedGame);
   });
-
 
   it("claims win if among winners", () => {
     expect(claimWinnings(testGameId)).toBeTruthy("Winnings is claimed if it is truthy");

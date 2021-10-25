@@ -95,11 +95,6 @@ export class Player {
     return this.roll1 + this.roll2;
   }
 }
-
-export class FormatedPlayer {
-  constructor(public gameId: GameID, public playerId: AccountID,public timeJoined: Timestamp, public timeRolled: Timestamp) {}
-}
-
 @nearBindgen
 export class GameReturnData {
   constructor(

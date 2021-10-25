@@ -1,6 +1,6 @@
 import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { AccountID, FEE, GameID, Profile } from "../utils";
-import { Game, GameStatus, Player, ClaimedWin, GameReturnData, FormatedPlayer } from "./model";
+import { Game, GameStatus, Player, ClaimedWin, GameReturnData } from "./model";
 import { games, players, profiles } from "./storage";
 
 /**
@@ -219,21 +219,20 @@ export function getGameDetails(gameId: GameID): Game[] {
  * @returns an array of players
  */
 
-export function getPlayersDetails(gameId: GameID): Player[] | FormatedPlayer[] {
+export function getPlayersDetails(gameId: GameID): Player[] {
   verifyGameId(gameId);
 
-  let result: Player[] | FormatedPlayer[] = [];
+  let status: GameStatus = GameStatus.Created;
   //   const gamePlayers = players.get(gameId) as Player[];
 
   for (let index = 0; index < games.length; index++) {
     if (games[index].id == gameId) {
-      const status = !games[index].gameNotCompleted() ? GameStatus.Completed : games[index].status;
-      const gamePlayers = players.get(gameId) as Player[];
-      result = formatPlayersData(gamePlayers, status);
+      status = !games[index].gameNotCompleted() ? GameStatus.Completed : games[index].status;
     }
   }
 
-  return result;
+  const gamePlayers = players.get(gameId) as Player[];
+  return formatPlayersData(gamePlayers, status);
 }
 
 /**
@@ -393,20 +392,16 @@ export function getGameType(_page: u32, type: GameStatus): GameReturnData {
  * @else It returns player information without the rolls from the player
  */
 
-function formatPlayersData(players: Player[], status: GameStatus): Player[] | FormatedPlayer[] {
-  const formatedPlayers: FormatedPlayer[] = [];
+function formatPlayersData(players: Player[], status: GameStatus): Player[] {
+  const formatedPlayers: Player[] = [];
 
   if (status === GameStatus.Completed) {
     return players;
   } else {
     for (let index = 0; index < players.length; index++) {
-      const player = new FormatedPlayer(
-        players[index].gameId,
-        players[index].playerId,
-        players[index].timeJoined,
-        players[index].timeRolled
-      );
-      formatedPlayers.push(player);
+      players[index].roll1 = 0;
+      players[index].roll2 = 0;
+      formatedPlayers.push(players[index]);
     }
   }
 

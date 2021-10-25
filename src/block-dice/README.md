@@ -72,19 +72,19 @@ function getActiveGames
 ```
 - "View" function (ie. a function that does not alters contract state)
 - Recieves a page number starting from 0
-- Returns max(8) activa gamems based on page number passed in
+- Returns max(8) active games based on page number passed in
 
 ```ts
 function getCompletedGames
 ```
 - "View" function (ie. a function that does not alters contract state)
 - Recieves a page number starting from 0
-- Returns max(8) completed gamems based on page number passed in
+- Returns max(8) completed games based on page number passed in
 
 ```ts
 function getCreatedGames
 ```
 - "View" function (ie. a function that does not alters contract state)
 - Recieves a page number starting from 0
-- Returns max(8) created gamems based on page number passed in
+- Returns max(8) created games based on page number passed in
 

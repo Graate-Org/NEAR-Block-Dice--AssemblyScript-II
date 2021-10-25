@@ -24,6 +24,7 @@ yarn test:unit
 [Describe]: Rolling dice
 
  [Success]: ✔ rolls the dice
+ [Success]: ✔ Doesn't return rolls if game has not ended
  [Success]: ✔ can't roll the dice twice
 
 [Describe]: Claiming winning error catch
@@ -41,15 +42,15 @@ yarn test:unit
   [Groups]: 6 pass, 6 total
   [Result]: ✔ PASS
 [Snapshot]: 0 total, 0 added, 0 removed, 0 different
- [Summary]: 12 pass,  0 fail, 12 total
-    [Time]: 270.067ms
+ [Summary]: 13 pass,  0 fail, 13 total
+    [Time]: 318.942ms
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   [Result]: ✔ PASS
    [Files]: 1 total
   [Groups]: 6 count, 6 pass
-   [Tests]: 12 pass, 0 fail, 12 total
-    [Time]: 16716.679ms
-✨  Done in 18.13s.
+   [Tests]: 13 pass, 0 fail, 13 total
+    [Time]: 16963.038ms
+✨  Done in 17.81s.
 ```
