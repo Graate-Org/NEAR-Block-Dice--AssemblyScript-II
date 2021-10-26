@@ -239,8 +239,8 @@ export function getPlayersDetails(gameId: GameID): Player[] {
  *
  * @returns Profile/user profile with array of games
  */
-export function getProfileDetails(): Profile {
-  const sender = context.sender;
+export function getProfileDetails(account: AccountID): Profile {
+  const sender = account;
 
   if (profiles.contains(sender)) {
     return profiles.get(sender) as Profile;
