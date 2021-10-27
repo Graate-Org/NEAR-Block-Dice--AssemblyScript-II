@@ -256,16 +256,16 @@ export function getProfileDetails(account: AccountID): Profile {
  * @function getGameType
  */
 
-export function getActiveGames(page: u32): GameReturnData {
-  return getGameType(page, GameStatus.Active);
+export function getActiveGames(): GameReturnData {
+  return getGameType(GameStatus.Active);
 }
 
-export function getCompletedGames(page: u32): GameReturnData {
-  return getGameType(page, GameStatus.Completed);
+export function getCompletedGames(): GameReturnData {
+  return getGameType(GameStatus.Completed);
 }
 
-export function getCreatedGames(page: u32): GameReturnData {
-  return getGameType(page, GameStatus.Created);
+export function getCreatedGames(): GameReturnData {
+  return getGameType(GameStatus.Created);
 }
 
 /**
@@ -353,9 +353,8 @@ function verifyGameId(gameId: GameID): void {
  *@function getCompletedGames
  *@function getCreatedGames
  */
-export function getGameType(_page: u32, type: GameStatus): GameReturnData {
+export function getGameType(type: GameStatus): GameReturnData {
   const gameType: Game[] = [];
-  const data: Game[] = [];
 
   for (let index = 0; index < games.length; index++) {
     if (games[index].status == type) {
@@ -364,21 +363,9 @@ export function getGameType(_page: u32, type: GameStatus): GameReturnData {
   }
 
   //   Pagination for game DATA
-  const page = _page;
-  const startIndex = 8 * page;
   const total = gameType.length;
-  const maxPage: u32 = <u32>(total / page + 1);
-  const nextPage = page + 1;
 
-  assert(startIndex < gameType.length, "Data request out of bounds!");
-
-  const endIndex = min(gameType.length, startIndex + 8);
-
-  for (let index = startIndex; index < endIndex; index++) {
-    data.push(gameType[index]);
-  }
-
-  const result = new GameReturnData(data, total, data.length, maxPage, page + 1, nextPage);
+  const result = new GameReturnData(gameType, total);
 
   return result;
 }
