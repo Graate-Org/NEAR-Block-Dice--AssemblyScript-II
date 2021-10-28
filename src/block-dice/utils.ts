@@ -8,4 +8,4 @@ export type GameID = string;
 
 export type Profile = string[];
 
-export const FEE = u128.from("200000000000000000000000");
+export const FEE = u128.from("500000000000000000000000");

@@ -35,7 +35,7 @@ export class Game {
 
   //   Static method
   static getGameRules(): string {
-    return "You need to create or join a game with a 0.02 NEAR fee \n A game starts when the first player rolls \n Each game lasts 30 minutes";
+    return "You need to create or join a game with a 0.05 NEAR fee \n A game starts when the first player rolls \n Each game lasts 30 minutes";
   }
 
   addNewPlayer(): void {
