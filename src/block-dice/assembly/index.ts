@@ -75,7 +75,7 @@ export function rollDice(gameId: GameID): Array<u32> {
       if ((game.status = GameStatus.Created)) {
         game.status = GameStatus.Active;
         game.started = Context.blockTimestamp;
-        game.ended = Context.blockTimestamp + 1800000;
+        game.ended = Context.blockTimestamp + 1800000000000;
       }
 
       games.replace(index, game);
