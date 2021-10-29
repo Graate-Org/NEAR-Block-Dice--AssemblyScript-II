@@ -353,7 +353,8 @@ function verifyGameId(gameId: GameID): void {
  *@function getCompletedGames
  *@function getCreatedGames
  */
-export function getGameType(type: GameStatus): GameReturnData {
+
+ function getGameType(type: GameStatus): GameReturnData {
   const gameType: Game[] = [];
 
   for (let index = 0; index < games.length; index++) {
