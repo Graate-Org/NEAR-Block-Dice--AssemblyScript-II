@@ -1,78 +1,54 @@
-## Setting up your terminal
+## Deploying contract through your terminal
 
-The scripts in this folder support a simple demonstration of the contract.
+The `deploy.sh` file within the scripts folder demonstrates a simple way of deploying a smart contract to the testnet.
 
-It uses the following setup:
+```sh
+[ -z "$CONTRACT" ] && echo "Missing \$CONTRACT environment variable"
+[ -z "$OWNER" ] && echo "Missing \$OWNER environment variable"
+```
+The above commands searches the environment variables for `$CONTRACT` and `$OWNER` variables.
 
-```txt
-┌───────────────────────────────────────┬───────────────────────────────────────┐
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                   A                   │                   B                   │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-│                                       │                                       │
-└───────────────────────────────────────┴───────────────────────────────────────┘
+```sh
+echo "deleting $CONTRACT and setting $OWNER as beneficiary"
+echo
+near delete $CONTRACT $OWNER
+```
+These commands deletes the two environment variable , `$CONTRACT` and `$OWNER` if any is found in the codebase, resolving the conflict of having two set of `$CONTRACT` and `$OWNER` variables.
+
+```sh
+echo --------------------------------------------
+echo
+echo "cleaning up the /neardev folder"
+echo
+rm -rf ./neardev
+```
+The above shell commands deletes the `./neardev` folder. This folder contains details about the smart contract once deploy, expample is the `CONTRACT_NAME` found in the `dev-account.env` file. This way we can always generate a new `./neardev` folder on every deploy.
+
+```sh
+echo --------------------------------------------
+echo
+echo "rebuilding the contract (release build)"
+echo
+yarn build:release
+```
+These commands compiles/builds the AssemlyScript code down to WebAssembly code. This action generates a file with `.wasm` extension that contains the WebAssembly code.
+
+```sh
+echo --------------------------------------------
+echo
+echo "redeploying the contract"
+echo
+near dev-deploy ../build/release/block-dice.wasm
+```
+These commands deploys/redeploys the resulting WebAssembly file from the previous action, `yarn build:release`. This file is deployed to the Near blockchain.
+
+```sh
+echo --------------------------------------------
+echo run the following commands
+echo
+echo 'export CONTRACT=__new_contract_account_id__'
+echo
+echo
 ```
 
-### Terminal **A**
-
-*This window is used to compile, deploy and control the contract*
-- Environment
-  ```sh
-  export CONTRACT=        # depends on deployment
-  export OWNER=           # any account you control
-
-  # for example
-  # export CONTRACT=dev-1615190770786-2702449
-  # export OWNER=sherif.testnet
-  ```
-
-- Commands
-  ```sh
-  1.init.sh               # cleanup, compile and deploy contract
-  2.run.sh                # call methods on the deployed contract
-  ```
-
-### Terminal **B**
-
-*This window is used to render the contract account storage*
-- Environment
-  ```sh
-  export CONTRACT=        # depends on deployment
-
-  # for example
-  # export CONTRACT=dev-1615190770786-2702449
-  ```
-
-- Commands
-  ```sh
-  # monitor contract storage using near-account-utils
-  # https://github.com/near-examples/near-account-utils
-  watch -d -n 1 yarn storage $CONTRACT
-  ```
----
-
-## OS Support
-
-### Linux
-
-- The `watch` command is supported natively on Linux
-- To learn more about any of these shell commands take a look at [explainshell.com](https://explainshell.com)
-
-### MacOS
-
-- Consider `brew info visionmedia-watch` (or `brew install watch`)
-
-### Windows
-
-- Consider this article: [What is the Windows analog of the Linux watch command?](https://superuser.com/questions/191063/what-is-the-windows-analog-of-the-linux-watch-command#191068)
+These final commands prompts the developer to export the exported interfaces, making it available for consumption on the local machine.

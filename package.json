@@ -14,7 +14,7 @@
     "deploy": "cd scripts && ./deploy.sh"
   },
   "keywords": [],
-  "author": "hello@near.org",
+  "author": "support@graate.org",
   "license": "ISC",
   "devDependencies": {},
   "dependencies": {
