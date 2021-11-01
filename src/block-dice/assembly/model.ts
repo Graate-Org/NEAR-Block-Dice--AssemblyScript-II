@@ -7,13 +7,13 @@ export const games = new PersistentVector<Game>("g");
 export const players = new PersistentMap<GameID, Player[]>("players");
 
 export enum GameStatus {
-  Created = 0,
+  Created,
   Active,
   Completed,
 }
 
 export enum ClaimedWin {
-  No = 0,
+  No,
   Claimed,
 }
 
