@@ -71,8 +71,8 @@ export function rollDice(gameId: GameID): Array<u32> {
       const game: Game = games[index];
       assert(game.canRollInGame(), "This game has ended!");
 
-      if ((game.status = GameStatus.Created)) {
-        game.status = GameStatus.Active;
+      if ((game.status = GameStatus.CREATED)) {
+        game.status = GameStatus.ACTIVE;
         game.started = Context.blockTimestamp;
         game.ended = Context.blockTimestamp + 1800000000000;
       }
@@ -115,8 +115,8 @@ export function getWinners(gameId: GameID): Array<string> {
   verifyGameId(gameId);
   for (let index = 0; index < games.length; index++) {
     if (games[index].id == gameId) {
-      if (games[index].status !== GameStatus.Completed) {
-        if (games[index].status !== GameStatus.Active) {
+      if (games[index].status !== GameStatus.COMPLETED) {
+        if (games[index].status !== GameStatus.ACTIVE) {
           assert(games[index].ended >= context.blockTimestamp, "Game is active but not ended yet!");
         } else {
           assert(false, "Game is started but not completed");
@@ -172,11 +172,11 @@ export function claimWinnings(gameId: GameID): bool {
   for (let index = 0; index < gamePlayers.length; index++) {
     if (gamePlayers[index].playerId == sender) {
       const player = gamePlayers[index];
-      assert(player.claimedWin != ClaimedWin.Claimed, "You have already claimed prize!");
+      assert(player.claimedWin != ClaimedWin.CLAIMED, "You have already claimed prize!");
       const prize = u128.div(pool, u128.from(winners.length));
 
       const transfer_win = ContractPromiseBatch.create(sender).transfer(prize)
-      player.claimedWin = ClaimedWin.Claimed;
+      player.claimedWin = ClaimedWin.CLAIMED;
       gamePlayers[index] = player;
 
       players.set(gameId, gamePlayers);
@@ -220,12 +220,12 @@ export function getGameDetails(gameId: GameID): Game[] {
 export function getPlayersDetails(gameId: GameID): Player[] {
   verifyGameId(gameId);
 
-  let status: GameStatus = GameStatus.Created;
+  let status: GameStatus = GameStatus.CREATED;
   //   const gamePlayers = players.get(gameId) as Player[];
 
   for (let index = 0; index < games.length; index++) {
     if (games[index].id == gameId) {
-      status = !games[index].gameNotCompleted() ? GameStatus.Completed : games[index].status;
+      status = !games[index].gameNotCompleted() ? GameStatus.COMPLETED : games[index].status;
     }
   }
 
@@ -255,15 +255,15 @@ export function getProfileDetails(account: AccountID): Profile {
  */
 
 export function getActiveGames(): GameReturnData {
-  return getGameType(GameStatus.Active);
+  return getGameType(GameStatus.ACTIVE);
 }
 
 export function getCompletedGames(): GameReturnData {
-  return getGameType(GameStatus.Completed);
+  return getGameType(GameStatus.COMPLETED);
 }
 
 export function getCreatedGames(): GameReturnData {
-  return getGameType(GameStatus.Created);
+  return getGameType(GameStatus.CREATED);
 }
 
 /**
@@ -381,7 +381,7 @@ function verifyGameId(gameId: GameID): void {
 function formatPlayersData(players: Player[], status: GameStatus): Player[] {
   const formatedPlayers: Player[] = [];
 
-  if (status === GameStatus.Completed) {
+  if (status === GameStatus.COMPLETED) {
     return players;
   } else {
     for (let index = 0; index < players.length; index++) {

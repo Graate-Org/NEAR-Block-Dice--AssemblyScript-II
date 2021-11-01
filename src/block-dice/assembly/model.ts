@@ -7,14 +7,14 @@ export const games = new PersistentVector<Game>("g");
 export const players = new PersistentMap<GameID, Player[]>("players");
 
 export enum GameStatus {
-  Created,
-  Active,
-  Completed,
+  CREATED,
+  ACTIVE,
+  COMPLETED,
 }
 
 export enum ClaimedWin {
-  No,
-  Claimed,
+  NO,
+  CLAIMED,
 }
 
 @nearBindgen
@@ -33,7 +33,7 @@ export class Game {
     this.createdBy = context.sender;
     this.players = 0;
     this.createdAt = context.blockTimestamp;
-    this.status = GameStatus.Created;
+    this.status = GameStatus.CREATED;
     this.id = this.generateGameId();
   }
 
@@ -63,8 +63,8 @@ export class Game {
   }
 
   gameNotCompleted(): bool {
-    if (this.status !== GameStatus.Completed) {
-      if (this.status === GameStatus.Active && this.ended >= context.blockTimestamp) {
+    if (this.status !== GameStatus.COMPLETED) {
+      if (this.status === GameStatus.ACTIVE && this.ended >= context.blockTimestamp) {
         return true;
       }
       return true;
@@ -73,8 +73,8 @@ export class Game {
   }
 
   canRollInGame(): bool {
-    if (this.status !== GameStatus.Completed) {
-      if (this.status === GameStatus.Active && this.ended >= context.blockTimestamp) {
+    if (this.status !== GameStatus.COMPLETED) {
+      if (this.status === GameStatus.ACTIVE && this.ended >= context.blockTimestamp) {
         return true;
       }
       return true;
@@ -92,7 +92,7 @@ export class Player {
   claimedWin: ClaimedWin;
   constructor(public gameId: GameID, public playerId: AccountID) {
     this.timeJoined = context.blockTimestamp;
-    this.claimedWin = ClaimedWin.No;
+    this.claimedWin = ClaimedWin.NO;
   }
 
   sumDiceRoll(): u32 {
