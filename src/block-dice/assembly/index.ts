@@ -1,7 +1,6 @@
 import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { AccountID, FEE, GameID, Profile } from "../utils";
-import { Game, GameStatus, Player, ClaimedWin, GameReturnData } from "./model";
-import { games, players, profiles } from "./storage";
+import { Game, GameStatus, Player, ClaimedWin, GameReturnData,games, players, profiles } from "./model";
 
 /**
  *
@@ -176,8 +175,7 @@ export function claimWinnings(gameId: GameID): bool {
       assert(player.claimedWin != ClaimedWin.Claimed, "You have already claimed prize!");
       const prize = u128.div(pool, u128.from(winners.length));
 
-      const transfer_win = ContractPromiseBatch.create(sender);
-      transfer_win.transfer(prize);
+      const transfer_win = ContractPromiseBatch.create(sender).transfer(prize)
       player.claimedWin = ClaimedWin.Claimed;
       gamePlayers[index] = player;
 
