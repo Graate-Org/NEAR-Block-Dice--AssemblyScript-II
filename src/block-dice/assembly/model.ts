@@ -4,7 +4,7 @@ import { PersistentMap, PersistentVector } from "near-sdk-core";
 
 export const profiles = new PersistentMap<AccountID, Profile>("p");
 export const games = new PersistentVector<Game>("g");
-export const players = new PersistentMap<GameID, Player[]>("players");
+export const players = new PersistentMap<GameID, Player[]>("plys");
 
 export enum GameStatus {
   CREATED,
