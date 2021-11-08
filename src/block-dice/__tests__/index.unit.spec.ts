@@ -1,8 +1,7 @@
 import { VMContext } from "near-mock-vm";
 import { context, u128 } from "near-sdk-core";
 import { claimWinnings, createNewGame, getPlayersDetails, getWinners, joinGame, rollDice } from "../assembly";
-import { GameStatus, Player } from "../assembly/model";
-import { games, players, profiles } from "../assembly/storage";
+import { GameStatus, Player, games, players, profiles } from "../assembly/model";
 import { FEE } from "../utils";
 
 const creator = "melvin.testnet";
@@ -68,7 +67,7 @@ describe("Checks for joining a game", () => {
   it("can't when join when completed", () => {
     VMContext.setSigner_account_id(player2);
     const completedGame = games[0];
-    completedGame.status = GameStatus.Completed;
+    completedGame.status = GameStatus.COMPLETED;
 
     games.replace(0, completedGame);
 
