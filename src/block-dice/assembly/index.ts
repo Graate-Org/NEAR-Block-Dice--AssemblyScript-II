@@ -1,6 +1,6 @@
 import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { AccountID, FEE, GameID, Profile } from "../utils";
-import { Game, GameStatus, Player, ClaimedWin, GameReturnData,games, players, profiles } from "./model";
+import { Game, GameStatus, Player, ClaimedWin, GameReturnData, games, players, profiles } from "./model";
 
 /**
  *
@@ -72,9 +72,11 @@ export function rollDice(gameId: GameID): Array<u32> {
       assert(game.canRollInGame(), "This game has ended!");
 
       if ((game.status = GameStatus.CREATED)) {
+        const time = Context.blockTimestamp;
         game.status = GameStatus.ACTIVE;
-        game.started = Context.blockTimestamp;
-        game.ended = Context.blockTimestamp + 1800000000000;
+        game.started = time;
+        game.ended = time + 1800000000000;
+        games.replace(index, game);
       }
 
       games.replace(index, game);
@@ -114,10 +116,13 @@ export function rollDice(gameId: GameID): Array<u32> {
 export function getWinners(gameId: GameID): Array<string> {
   verifyGameId(gameId);
   for (let index = 0; index < games.length; index++) {
-    if (games[index].id == gameId) {
-      if (games[index].status !== GameStatus.COMPLETED) {
-        if (games[index].status !== GameStatus.ACTIVE) {
-          assert(games[index].ended >= context.blockTimestamp, "Game is active but not ended yet!");
+    const game: Game = games[index];
+    if (game.id == gameId) {
+      if (game.status != GameStatus.COMPLETED) {
+        if (game.status == GameStatus.ACTIVE) {
+          assert(game.ended <= Context.blockTimestamp, "Game is active but not ended yet!");
+          game.status = GameStatus.COMPLETED;
+          games.replace(index, game);
         } else {
           assert(false, "Game is started but not completed");
         }
@@ -175,7 +180,7 @@ export function claimWinnings(gameId: GameID): bool {
       assert(player.claimedWin != ClaimedWin.CLAIMED, "You have already claimed prize!");
       const prize = u128.div(pool, u128.from(winners.length));
 
-      const transfer_win = ContractPromiseBatch.create(sender).transfer(prize)
+      const transfer_win = ContractPromiseBatch.create(sender).transfer(prize);
       player.claimedWin = ClaimedWin.CLAIMED;
       gamePlayers[index] = player;
 
@@ -352,17 +357,24 @@ function verifyGameId(gameId: GameID): void {
  *@function getCreatedGames
  */
 
- function getGameType(type: GameStatus): GameReturnData {
+export function getGameType(type: GameStatus): GameReturnData {
   const gameType: Game[] = [];
 
   for (let index = 0; index < games.length; index++) {
-    if (games[index].status == type) {
-      gameType.push(games[index]);
+    const game: Game = games[index];
+    if (game.status == GameStatus.ACTIVE) {
+      if (Context.blockTimestamp > game.ended) {
+        game.status = GameStatus.COMPLETED;
+        games.replace(index, game);
+      }
+    }
+
+    if (game.status == type) {
+      gameType.push(game);
     }
   }
 
-  //   Pagination for game DATA
-  const total = gameType.length;
+  const total: u32 = gameType.length;
 
   const result = new GameReturnData(gameType, total);
 
