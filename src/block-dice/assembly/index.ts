@@ -295,6 +295,10 @@ function addGameToProfile(gameId: GameID, sender: AccountID): void {
     profile = profiles.get(sender) as Profile;
   }
 
+  for (let index = 0; index < profile.length; index++) {
+    assert(profile[index] != gameId, "Game id already added to profile");
+  }
+
   profile.push(gameId);
 
   //   set to storage
