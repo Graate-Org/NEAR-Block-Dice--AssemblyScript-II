@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-near call $CONTRACT getCompleteGames --account_id $OWNER
+near call $CONTRACT getCompletedGames --account_id $PLAYER
 
 exit 0
