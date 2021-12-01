@@ -1,4 +1,4 @@
-import { context, Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
+import {Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { AccountID, FEE, GameID, Profile } from "../utils";
 import { Game, GameStatus, Player, ClaimedWin, GameReturnData, games, players, profiles } from "./model";
 
@@ -9,7 +9,7 @@ import { Game, GameStatus, Player, ClaimedWin, GameReturnData, games, players, p
  * Needs minimun attached deposit to be 0.2 NEAR as fee
  */
 export function createNewGame(): GameID {
-  const sender = context.sender;
+  const sender = Context.sender;
   verifyGameFee(Context.attachedDeposit);
   const game = new Game();
   const gameId = game.id;
@@ -36,7 +36,7 @@ export function createNewGame(): GameID {
  */
 
 export function joinGame(gameId: GameID): string {
-  const sender = context.sender;
+  const sender = Context.sender;
   verifyGameId(gameId);
   verifyGameFee(Context.attachedDeposit);
   for (let index = 0; index < games.length; index++) {
@@ -71,7 +71,7 @@ export function rollDice(gameId: GameID): Array<u32> {
       const game: Game = games[index];
       assert(game.canRollInGame(), "This game has ended!");
 
-      if ((game.status = GameStatus.CREATED)) {
+      if (game.status == GameStatus.CREATED) {
         const time = Context.blockTimestamp;
         game.status = GameStatus.ACTIVE;
         game.started = time;
