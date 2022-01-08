@@ -1,4 +1,4 @@
-import {Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
+import { Context, ContractPromiseBatch, logging, RNG, u128 } from "near-sdk-core";
 import { AccountID, FEE, GameID, Profile } from "../utils";
 import { Game, GameStatus, Player, ClaimedWin, GameReturnData, games, players, profiles } from "./model";
 
@@ -77,6 +77,12 @@ export function rollDice(gameId: GameID): Array<u32> {
         game.started = time;
         game.ended = time + 1800000000000;
         games.replace(index, game);
+      } else {
+        if (game.status == GameStatus.ACTIVE) {
+          if (game.ended <= Context.blockTimestamp) {
+            game.status = GameStatus.COMPLETED;
+          }
+        }
       }
 
       games.replace(index, game);
@@ -224,7 +230,6 @@ export function getGameDetails(gameId: GameID): Game[] {
 
 export function getPlayersDetails(gameId: GameID): Player[] {
   verifyGameId(gameId);
-
   let status: GameStatus = GameStatus.CREATED;
   //   const gamePlayers = players.get(gameId) as Player[];
 
@@ -360,7 +365,6 @@ export function getGameType(type: GameStatus): GameReturnData {
     if (game.status == GameStatus.ACTIVE) {
       if (Context.blockTimestamp > game.ended) {
         game.status = GameStatus.COMPLETED;
-        games.replace(index, game);
       }
     }
 
