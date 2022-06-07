@@ -29,7 +29,7 @@ function rollDice
 ```ts
 function getWinners
 ```
-- "Change" function
+- "View" function
 - Recieves a game's unique id as parameter
 - Returns an array with the account id of the winners for the game id passed in
 
